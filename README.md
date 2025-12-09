@@ -3448,3 +3448,64 @@ Avant de terminer ce TP, répondez aux questions suivantes pour valider votre co
 - [ ] Détection d'anomalies
 
 ---
+
+## 📚 Pour aller plus loin
+
+### Documentation officielle MongoDB
+
+| Ressource | Description |
+|-----------|-------------|
+| [Data Modeling](https://www.mongodb.com/docs/manual/data-modeling/) | Guide complet sur la modélisation de données |
+| [Schema Design Patterns](https://www.mongodb.com/docs/manual/data-modeling/design-patterns/) | Documentation des patterns de conception |
+| [Data Model Examples](https://www.mongodb.com/docs/manual/applications/data-models/) | Exemples concrets de modélisation |
+| [Time Series Collections](https://www.mongodb.com/docs/manual/core/timeseries-collections/) | Collections time-series natives (MongoDB 5.0+) |
+| [Aggregation Pipeline](https://www.mongodb.com/docs/manual/core/aggregation-pipeline/) | Référence complète des agrégations |
+
+### Formation gratuite MongoDB University
+
+| Cours | Niveau | Durée |
+|-------|--------|-------|
+| [MongoDB Basics (M001)](https://learn.mongodb.com/courses/m001-mongodb-basics) | Débutant | ~8h |
+| [Data Modeling (M320)](https://learn.mongodb.com/courses/m320-mongodb-data-modeling) | Intermédiaire | ~7h |
+| [Performance (M201)](https://learn.mongodb.com/courses/m201-mongodb-performance) | Avancé | ~7h |
+
+> 💡 Les cours MongoDB University sont gratuits et délivrent une certification officielle.
+
+### Articles de référence
+
+- [Building with Patterns: A Summary](https://www.mongodb.com/blog/post/building-with-patterns-a-summary) — Récapitulatif des 12 patterns MongoDB par Daniel Coupal (MongoDB)
+- [Best Practices for Time Series](https://www.mongodb.com/docs/manual/core/timeseries/timeseries-best-practices/) — Optimisation des collections time-series
+
+### Outils recommandés
+
+| Outil | Usage |
+|-------|-------|
+| [MongoDB Compass](https://www.mongodb.com/products/compass) | Interface graphique pour explorer les données et construire des agrégations |
+| [MongoDB Atlas](https://www.mongodb.com/atlas) | Base de données cloud avec tier gratuit (512 Mo) |
+| [Studio 3T](https://studio3t.com/) | IDE MongoDB avancé (version gratuite disponible) |
+
+### Concepts avancés à explorer
+
+Si vous souhaitez approfondir après ce TP :
+
+1. **Collections Time-Series natives** (MongoDB 5.0+)
+   - Bucketing automatique optimisé
+   - Compression améliorée
+   - Requêtes temporelles optimisées
+
+2. **Change Streams**
+   - Réagir en temps réel aux modifications
+   - Synchronisation entre collections (CQRS)
+   - Triggers applicatifs
+
+3. **Transactions multi-documents**
+   - ACID sur plusieurs collections
+   - Sessions et isolation
+   - Cas d'usage et limitations
+
+4. **Sharding**
+   - Distribution horizontale des données
+   - Choix de la clé de sharding
+   - Stratégies pour l'IoT à grande échelle
+
+---
