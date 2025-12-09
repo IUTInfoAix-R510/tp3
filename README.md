@@ -91,35 +91,6 @@ Le **référencement** consiste à stocker les données dans des **documents sé
 
 **Inconvénients** : Nécessite plusieurs requêtes ou `$lookup`, pas de transaction atomique native.
 
-#### Comparaison visuelle
-
-```mermaid
-flowchart LR
-    subgraph Embedding ["📦 EMBEDDING"]
-        direction TB
-        E1[Document User]
-        E2[name: Alice]
-        E3[email: ...]
-        E4[address: {...}]
-        E1 --- E2 --- E3 --- E4
-    end
-
-    subgraph Reference ["🔗 RÉFÉRENCEMENT"]
-        direction TB
-        R1[Document User]
-        R2[name: Alice]
-        R3[address_id: xyz]
-        R4[Document Address]
-        R5[city: Aix]
-        R1 --- R2 --- R3
-        R3 -.->|$lookup| R4
-        R4 --- R5
-    end
-
-    style Embedding fill:#e8f5e9
-    style Reference fill:#e3f2fd
-```
-
 #### Le spectre de la modélisation
 
 En réalité, ce n'est pas un choix binaire. Il existe un **spectre** d'options :
