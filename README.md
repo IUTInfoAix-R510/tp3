@@ -35,6 +35,35 @@ Cette séance est **cruciale** pour votre projet :
 
 ---
 
+## 🗺️ Vue d'ensemble des exercices
+
+| # | Exercice | Difficulté | Phase | Thème |
+|---|----------|------------|-------|-------|
+| [1](#exercice-1--blog---auteur-et-articles-) | Blog - Auteur et Articles | ⭐☆☆ | Phase 1 | Embedding |
+| [2](#exercice-2--commande-et-produits-) | Commande et Produits | ⭐☆☆ | Phase 1 | Embedding vs Référencement |
+| [3](#exercice-3--utilisateur-et-adresses-) | Utilisateur et Adresses | ⭐⭐☆ | Phase 1 | Cardinalité 1:N |
+| [4](#exercice-4--cours-et-étudiants-) | Cours et Étudiants | ⭐⭐☆ | Phase 1 | Relation N:N |
+| [5](#exercice-5--quiz-récapitulatif-) | Quiz récapitulatif | ⭐☆☆ | Phase 1 | Synthèse |
+| [6](#exercice-6--découvrir-le-problème-des-tableaux-illimités-) | Problème des tableaux illimités | ⭐☆☆ | Phase 2 | Introduction Patterns |
+| [7](#exercice-7--appliquer-le-pattern-subset-) | Pattern Subset | ⭐⭐☆ | Phase 2 | Subset |
+| [8](#exercice-8--appliquer-le-pattern-computed-) | Pattern Computed | ⭐⭐☆ | Phase 2 | Computed |
+| [9](#exercice-9--appliquer-le-pattern-bucket-séries-temporelles-) | Pattern Bucket | ⭐⭐⭐ | Phase 2 | Bucket / Time-series |
+| [10](#exercice-10--synthèse---combiner-les-patterns-) | Synthèse - Combiner les patterns | ⭐⭐⭐ | Phase 2 | Multi-patterns |
+| [11](#exercice-11--pattern-attribute-pour-les-métadonnées-flexibles-) | Pattern Attribute | ⭐⭐☆ | Phase 2 | Attribute |
+| [12](#exercice-12--pattern-outlier-pour-gérer-les-capteurs-viraux-) | Pattern Outlier | ⭐⭐⭐ | Phase 2 | Outlier |
+| [13](#exercice-13--créer-et-interroger-les-données-iot-) | Créer et interroger les données IoT | ⭐⭐☆ | Phase 4 | IoT Basics |
+| [14](#exercice-14--agrégation-par-zone-) | Agrégation par zone | ⭐⭐☆ | Phase 4 | Agrégation |
+| [15](#exercice-15--détecter-les-capteurs-offline-) | Détecter les capteurs offline | ⭐⭐☆ | Phase 4 | Monitoring |
+| [16](#exercice-16--simuler-des-mesures-et-créer-des-buckets-) | Simuler des mesures et créer des buckets | ⭐⭐⭐ | Phase 4 | Bucket IoT |
+| [17](#exercice-17--synthèse---dashboard-temps-réel-) | Synthèse - Dashboard temps réel | ⭐⭐⭐ | Phase 4 | $facet / Dashboard |
+| [18](#exercice-18--analyser-et-optimiser-une-requête-avec-explain-) | Analyser avec explain() | ⭐⭐☆ | Phase 5 | Index / Performance |
+| [19](#exercice-19--bulk-operations-vs-insertions-unitaires-) | Bulk operations | ⭐⭐☆ | Phase 5 | Bulk Write |
+| [20](#exercice-20--mettre-en-place-un-index-ttl-) | Index TTL | ⭐⭐☆ | Phase 5 | TTL / Rétention |
+
+> 💡 **Phases 3** contient 2 exercices non numérotés sur le Versioning et le Polymorphic.
+
+---
+
 ## 📚 Phase 1 : Les fondamentaux de la modélisation MongoDB (45 min)
 
 ### Embedding vs Référencement
