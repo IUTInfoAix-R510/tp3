@@ -51,16 +51,16 @@ Cette séance est **cruciale** pour votre projet :
 | [10](#exercice-10--synthèse---combiner-les-patterns-) | Synthèse - Combiner les patterns | ⭐⭐⭐ | Phase 2 | Multi-patterns |
 | [11](#exercice-11--pattern-attribute-pour-les-métadonnées-flexibles-) | Pattern Attribute | ⭐⭐☆ | Phase 2 | Attribute |
 | [12](#exercice-12--pattern-outlier-pour-gérer-les-capteurs-viraux-) | Pattern Outlier | ⭐⭐⭐ | Phase 2 | Outlier |
-| [13](#exercice-13--créer-et-interroger-les-données-iot-) | Créer et interroger les données IoT | ⭐⭐☆ | Phase 4 | IoT Basics |
-| [14](#exercice-14--agrégation-par-zone-) | Agrégation par zone | ⭐⭐☆ | Phase 4 | Agrégation |
-| [15](#exercice-15--détecter-les-capteurs-offline-) | Détecter les capteurs offline | ⭐⭐☆ | Phase 4 | Monitoring |
-| [16](#exercice-16--simuler-des-mesures-et-créer-des-buckets-) | Simuler des mesures et créer des buckets | ⭐⭐⭐ | Phase 4 | Bucket IoT |
-| [17](#exercice-17--synthèse---dashboard-temps-réel-) | Synthèse - Dashboard temps réel | ⭐⭐⭐ | Phase 4 | $facet / Dashboard |
-| [18](#exercice-18--analyser-et-optimiser-une-requête-avec-explain-) | Analyser avec explain() | ⭐⭐☆ | Phase 5 | Index / Performance |
-| [19](#exercice-19--bulk-operations-vs-insertions-unitaires-) | Bulk operations | ⭐⭐☆ | Phase 5 | Bulk Write |
-| [20](#exercice-20--mettre-en-place-un-index-ttl-) | Index TTL | ⭐⭐☆ | Phase 5 | TTL / Rétention |
-
-> 💡 **Phases 3** contient 2 exercices non numérotés sur le Versioning et le Polymorphic.
+| [13](#exercice-13--implémenter-le-versioning-) | Implémenter le Versioning | ⭐⭐☆ | Phase 3 | Versioning |
+| [14](#exercice-14--pattern-polymorphic-pour-les-événements-) | Pattern Polymorphic | ⭐⭐☆ | Phase 3 | Polymorphic |
+| [15](#exercice-15--créer-et-interroger-les-données-iot-) | Créer et interroger les données IoT | ⭐⭐☆ | Phase 4 | IoT Basics |
+| [16](#exercice-16--agrégation-par-zone-) | Agrégation par zone | ⭐⭐☆ | Phase 4 | Agrégation |
+| [17](#exercice-17--détecter-les-capteurs-offline-) | Détecter les capteurs offline | ⭐⭐☆ | Phase 4 | Monitoring |
+| [18](#exercice-18--simuler-des-mesures-et-créer-des-buckets-) | Simuler des mesures et créer des buckets | ⭐⭐⭐ | Phase 4 | Bucket IoT |
+| [19](#exercice-19--synthèse---dashboard-temps-réel-) | Synthèse - Dashboard temps réel | ⭐⭐⭐ | Phase 4 | $facet / Dashboard |
+| [20](#exercice-20--analyser-et-optimiser-une-requête-avec-explain-) | Analyser avec explain() | ⭐⭐☆ | Phase 5 | Index / Performance |
+| [21](#exercice-21--bulk-operations-vs-insertions-unitaires-) | Bulk operations | ⭐⭐☆ | Phase 5 | Bulk Write |
+| [22](#exercice-22--mettre-en-place-un-index-ttl-) | Index TTL | ⭐⭐☆ | Phase 5 | TTL / Rétention |
 
 ---
 
@@ -1828,7 +1828,7 @@ Ces exercices vous permettent de pratiquer les patterns vus dans cette phase.
 
 ---
 
-#### Exercice : Implémenter le Versioning ⭐⭐☆
+#### Exercice 13 : Implémenter le Versioning ⭐⭐☆
 
 **Objectif :** Créer un système qui garde l'historique des modifications d'un document.
 
@@ -1964,7 +1964,7 @@ db.sensor_configs_history.find({sensor_id: "SENS-001"})
 
 ---
 
-#### Exercice : Pattern Polymorphic pour les événements ⭐⭐☆
+#### Exercice 14 : Pattern Polymorphic pour les événements ⭐⭐☆
 
 **Objectif :** Stocker différents types d'événements dans une même collection.
 
@@ -2313,7 +2313,7 @@ Ces exercices utilisent les collections définies ci-dessus. Commencez par crée
 
 ---
 
-#### Exercice 13 : Créer et interroger les données IoT ⭐⭐☆
+#### Exercice 15 : Créer et interroger les données IoT ⭐⭐☆
 
 **Objectif :** Manipuler les collections IoT et comprendre leur structure.
 
@@ -2383,7 +2383,7 @@ db.current_state.find({battery_level: {$lt: 70}}, {_id: 1, battery_level: 1})
 
 ---
 
-#### Exercice 14 : Agrégation par zone ⭐⭐☆
+#### Exercice 16 : Agrégation par zone ⭐⭐☆
 
 **Objectif :** Calculer des statistiques par zone géographique.
 
@@ -2451,7 +2451,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 15 : Détecter les capteurs offline ⭐⭐☆
+#### Exercice 17 : Détecter les capteurs offline ⭐⭐☆
 
 **Objectif :** Identifier les capteurs qui ne répondent plus.
 
@@ -2538,7 +2538,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 16 : Simuler des mesures et créer des buckets ⭐⭐⭐
+#### Exercice 18 : Simuler des mesures et créer des buckets ⭐⭐⭐
 
 **Objectif :** Appliquer le pattern Bucket sur des données IoT.
 
@@ -2630,7 +2630,7 @@ db.hourly_buckets.findOne()
 
 ---
 
-#### Exercice 17 : Synthèse - Dashboard temps réel ⭐⭐⭐
+#### Exercice 19 : Synthèse - Dashboard temps réel ⭐⭐⭐
 
 **Objectif :** Créer une vue agrégée pour un dashboard.
 
@@ -3134,7 +3134,7 @@ db.system.profile.find().sort({ts: -1}).limit(10)
 
 ---
 
-#### Exercice 18 : Analyser et optimiser une requête avec explain() ⭐⭐☆
+#### Exercice 20 : Analyser et optimiser une requête avec explain() ⭐⭐☆
 
 **Objectif :** Comprendre l'impact des index sur les performances.
 
@@ -3224,7 +3224,7 @@ print(`| Temps (ms) | ${explainNoIndex.executionStats.executionTimeMillis} | ${e
 
 ---
 
-#### Exercice 19 : Bulk operations vs insertions unitaires ⭐⭐☆
+#### Exercice 21 : Bulk operations vs insertions unitaires ⭐⭐☆
 
 **Objectif :** Mesurer le gain de performance des opérations bulk.
 
@@ -3310,7 +3310,7 @@ print(`- Collection rapide: ${db.bulk_test_fast.countDocuments()} docs`)
 
 ---
 
-#### Exercice 20 : Mettre en place un index TTL ⭐⭐☆
+#### Exercice 22 : Mettre en place un index TTL ⭐⭐☆
 
 **Objectif :** Configurer la suppression automatique des données anciennes.
 
