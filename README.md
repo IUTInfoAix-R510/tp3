@@ -139,9 +139,9 @@ Pour chaque relation, posez-vous ces questions :
 | **Fréquence de mise à jour ?** | Rarement modifié | Souvent modifié |
 | **Besoin d'accès indépendant ?** | Non | Oui, requêtes séparées |
 
-**Règle simple :** Si vous avez ≥ 3 réponses dans la colonne "Référencement", privilégiez les références.
+**Règle simple :** Si vous avez plus de trois réponses dans la colonne "Référencement", privilégiez les références.
 
-### 1.3 Exercices
+### Exercices
 
 Ces exercices vous permettent de pratiquer le choix entre embedding et référencement **avant** d'apprendre les patterns avancés.
 
@@ -452,7 +452,7 @@ Pour chaque situation, indiquez **Embedding** ou **Référencement** et justifie
 
 ## 🎨 Phase 2 : Les Design Patterns MongoDB (75 min)
 
-### 2.1 Pattern : Subset (Sous-ensemble)
+### Pattern : Subset (Sous-ensemble)
 
 **Problème :** Document avec un tableau qui peut devenir très large.
 
@@ -487,7 +487,7 @@ Pour chaque situation, indiquez **Embedding** ou **Référencement** et justifie
 }
 ```
 
-### 2.2 Pattern : Computed (Pré-calculé)
+### Pattern : Computed (Pré-calculé)
 
 **Problème :** Calculs coûteux répétés fréquemment.
 
@@ -531,7 +531,7 @@ db.users.updateOne(
 )
 ```
 
-### 2.3 Pattern : Bucket (Seau) pour Time-Series
+### Pattern : Bucket (Seau) pour Time-Series
 
 **Problème :** Millions de points de données temporelles.
 
@@ -570,7 +570,7 @@ db.users.updateOne(
 // → 24 documents/jour/capteur (réduction 12x)
 ```
 
-### 2.4 Pattern : Attribute (Attribut)
+### Pattern : Attribute (Attribut)
 
 **Problème :** Schéma avec nombreux champs optionnels et variés.
 
@@ -614,7 +614,7 @@ db.products.find({
 })
 ```
 
-### 2.5 Pattern : Outlier (Valeur aberrante)
+### Pattern : Outlier (Valeur aberrante)
 
 **Problème :** Quelques documents avec tableaux énormes, la majorité petits.
 
@@ -656,7 +656,7 @@ db.products.find({
 }
 ```
 
-### 2.6 Exercices guidés sur les patterns
+### Exercices guidés sur les patterns
 
 Ces exercices sont conçus pour être réalisés **sur machine**, pas à pas. Chaque exercice vous guide progressivement vers la découverte et l'application d'un pattern.
 
@@ -1165,7 +1165,7 @@ db.sensor_buckets.createIndex({"location.zone": 1, bucket_start: -1})
 
 ## 🏗️ Phase 3 : Patterns architecturaux (45 min)
 
-### 3.1 Pattern : Versioning des documents
+### Pattern : Versioning des documents
 
 **Problème :** Garder l'historique des modifications.
 
@@ -1215,7 +1215,7 @@ db.sensor_buckets.createIndex({"location.zone": 1, bucket_start: -1})
 }
 ```
 
-### 3.2 Pattern : Polymorphic (Polymorphe)
+### Pattern : Polymorphic (Polymorphe)
 
 **Problème :** Stocker différents types d'entités dans une collection.
 
@@ -1259,7 +1259,7 @@ db.events.createIndex(
 )
 ```
 
-### 3.3 Pattern : CQRS (Command Query Responsibility Segregation)
+### Pattern : CQRS (Command Query Responsibility Segregation)
 
 **Problème :** Modèles optimaux différents pour lecture vs écriture.
 
@@ -1332,7 +1332,7 @@ db.sensor_writes.watch(pipeline).on("change", (change) => {
 });
 ```
 
-### 3.4 Pattern : Archive
+### Pattern : Archive
 
 **Problème :** Données anciennes rarement accédées mais à conserver.
 
@@ -1413,14 +1413,14 @@ db.measurements.aggregate(archivePipeline)
 
 ## 💡 Phase 4 : Cas pratique IoT (50 min)
 
-### 4.1 Analyse des besoins
+### Analyse des besoins
 
 Votre module doit gérer :
 - **Volume :** 1000 capteurs × 288 mesures/jour = 288k documents/jour
 - **Rétention :** 7 jours brut, 1 an agrégé
 - **Requêtes :** Temps réel, historique, alertes, analytics
 
-### 4.2 Architecture proposée
+### Architecture proposée
 
 ```mermaid
 graph TB
@@ -1444,7 +1444,7 @@ graph TB
     end
 ```
 
-### 4.3 Implémentation des collections
+### Implémentation des collections
 
 #### Collection 1 : raw_measurements (données brutes)
 
@@ -1602,7 +1602,7 @@ db.raw_measurements.aggregate([
 }
 ```
 
-### 4.4 Exercices
+### Exercices
 
 Ces exercices utilisent les collections définies ci-dessus. Commencez par créer les données de test.
 
@@ -1987,7 +1987,7 @@ Cette phase couvre les techniques essentielles pour passer d'un prototype foncti
 
 ---
 
-### 5.1 Stratégies d'indexation
+### Stratégies d'indexation
 
 #### Pourquoi les index sont cruciaux en IoT ?
 
@@ -2082,7 +2082,7 @@ db.measurements.insertOne({
 
 ---
 
-### 5.2 Patterns de mise à jour efficaces
+### Patterns de mise à jour efficaces
 
 #### Pourquoi les mises à jour atomiques sont essentielles ?
 
@@ -2211,7 +2211,7 @@ console.log(`
 
 ---
 
-### 5.3 Monitoring et observabilité
+### Monitoring et observabilité
 
 #### Pourquoi monitorer ?
 
@@ -2366,7 +2366,7 @@ async function collectSystemMetrics() {
 
 ---
 
-### 5.4 Checklist d'optimisation pour la production
+### Checklist d'optimisation pour la production
 
 Avant de déployer votre système IoT en production, vérifiez chaque point :
 
