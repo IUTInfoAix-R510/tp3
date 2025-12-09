@@ -32,6 +32,18 @@ Cette séance est **cruciale** pour votre projet :
 - TP1 et TP2 complétés
 - Compréhension des pipelines d'agrégation
 - MongoDB Atlas configuré et accessible
+---
+
+## Création de votre fork du TP
+
+La première chose que vous allez faire est de créer un fork personnel du présent dépôt. Pour ce faire, rendez-vous sur le lien suivant :
+
+<https://classroom.github.com/a/>
+
+GitHub va vous créer un dépôt contenant un fork du dépôt 'IUTInfoAix-R510/tp3' et s'appelant 'IUTInfoAix-R510-2025/tp3-votreUsername'. Vous apparaîtrez automatiquement comme contributeur de ce projet pour y pousser votre travail.
+
+---
+
 
 ### Initialisation des données
 
