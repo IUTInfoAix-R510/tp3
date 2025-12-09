@@ -452,6 +452,8 @@ Pour chaque situation, indiquez **Embedding** ou **Référencement** et justifie
 
 ## 🎨 Phase 2 : Les Design Patterns MongoDB (75 min)
 
+> 📌 **Fil rouge SteamCity** : À partir de cette phase, nous nous concentrons sur le projet IoT de ville intelligente. Les patterns que vous allez découvrir sont directement applicables à la gestion des capteurs environnementaux, des mesures temps réel et des alertes.
+
 ### Pattern : Subset (Sous-ensemble)
 
 **Problème :** Document avec un tableau qui peut devenir très large.
@@ -1163,7 +1165,174 @@ db.sensor_buckets.createIndex({"location.zone": 1, bucket_start: -1})
 
 ---
 
+#### Exercice 11 : Pattern Attribute pour les métadonnées flexibles ⭐⭐☆
+
+**Objectif :** Gérer des capteurs avec des caractéristiques variées.
+
+**Contexte :** Votre parc de capteurs est hétérogène. Certains mesurent la température, d'autres la qualité de l'air, d'autres le bruit. Chaque type a des spécifications différentes.
+
+**Le problème avec l'approche classique :**
+
+```javascript
+// ❌ Approche classique : beaucoup de champs null
+{
+    _id: "SENS-001",
+    type: "temperature",
+    // Champs spécifiques température
+    temp_unit: "celsius",
+    temp_precision: 0.1,
+    temp_range_min: -40,
+    temp_range_max: 85,
+    // Champs spécifiques bruit (null pour ce capteur)
+    noise_unit: null,
+    noise_frequency_response: null,
+    // Champs spécifiques air (null pour ce capteur)
+    air_particles_measured: null,
+    air_calibration_gas: null
+    // ... des dizaines d'autres champs selon le type
+}
+```
+
+**Étape 1 : Appliquer le Pattern Attribute**
+
+```javascript
+db.sensors_catalog.drop()
+
+// Capteur température avec ses specs
+db.sensors_catalog.insertOne({
+    _id: "SENS-TEMP-001",
+    name: "Thermomètre extérieur",
+    type: "temperature",
+    manufacturer: "SensorCo",
+
+    // Pattern Attribute : caractéristiques en tableau
+    specs: [
+        {key: "unit", value: "celsius", type: "string"},
+        {key: "precision", value: 0.1, type: "number", unit: "°C"},
+        {key: "range_min", value: -40, type: "number", unit: "°C"},
+        {key: "range_max", value: 85, type: "number", unit: "°C"},
+        {key: "response_time", value: 5, type: "number", unit: "seconds"}
+    ]
+})
+
+// Capteur qualité d'air avec specs différentes
+db.sensors_catalog.insertOne({
+    _id: "SENS-AIR-001",
+    name: "Analyseur d'air",
+    type: "air_quality",
+    manufacturer: "AirTech",
+
+    specs: [
+        {key: "particles", value: ["PM2.5", "PM10"], type: "array"},
+        {key: "co2_range", value: 5000, type: "number", unit: "ppm"},
+        {key: "accuracy", value: 3, type: "number", unit: "%"},
+        {key: "calibration_interval", value: 6, type: "number", unit: "months"}
+    ]
+})
+
+// Capteur bruit
+db.sensors_catalog.insertOne({
+    _id: "SENS-NOISE-001",
+    name: "Sonomètre urbain",
+    type: "noise",
+    manufacturer: "AcoustiSense",
+
+    specs: [
+        {key: "range_min", value: 30, type: "number", unit: "dB"},
+        {key: "range_max", value: 130, type: "number", unit: "dB"},
+        {key: "frequency_response", value: "20Hz-20kHz", type: "string"},
+        {key: "weighting", value: "A", type: "string"}
+    ]
+})
+
+print("Capteurs créés:", db.sensors_catalog.countDocuments())
+```
+
+**Étape 2 : Créer un index pour rechercher par spécification**
+
+```javascript
+// Index composé sur les attributs
+db.sensors_catalog.createIndex({"specs.key": 1, "specs.value": 1})
+
+// Trouver tous les capteurs avec une précision <= 0.5
+db.sensors_catalog.find({
+    specs: {
+        $elemMatch: {
+            key: "precision",
+            value: {$lte: 0.5}
+        }
+    }
+}, {name: 1, type: 1})
+```
+
+📝 **Question 1 :** Combien de capteurs ont une spécification "precision" ? _______
+
+**Étape 3 : Requêtes sur les attributs**
+
+```javascript
+// Tous les capteurs avec un range_max défini
+db.sensors_catalog.find({
+    "specs.key": "range_max"
+}).toArray()
+
+// Extraire une spec spécifique avec $filter
+db.sensors_catalog.aggregate([
+    {$project: {
+        name: 1,
+        type: 1,
+        range_max: {
+            $filter: {
+                input: "$specs",
+                as: "spec",
+                cond: {$eq: ["$$spec.key", "range_max"]}
+            }
+        }
+    }},
+    {$match: {"range_max.0": {$exists: true}}}
+])
+```
+
+📝 **Question 2 :** Combien de capteurs ont une spécification "range_max" ? _______
+
+**Étape 4 : Ajouter une nouvelle spec à un capteur existant**
+
+```javascript
+// Ajouter une nouvelle caractéristique
+db.sensors_catalog.updateOne(
+    {_id: "SENS-TEMP-001"},
+    {$push: {specs: {
+        key: "waterproof",
+        value: "IP67",
+        type: "string"
+    }}}
+)
+
+// Vérifier
+db.sensors_catalog.findOne({_id: "SENS-TEMP-001"}).specs
+```
+
+📝 **Question 3 :** Quel avantage offre le Pattern Attribute par rapport à des champs fixes ?
+
+<details>
+<summary>💡 Réponses</summary>
+
+- **Q1 :** 1 capteur (SENS-TEMP-001)
+- **Q2 :** 2 capteurs (SENS-TEMP-001 et SENS-NOISE-001)
+- **Q3 :**
+  - **Flexibilité** : Pas de schéma fixe, chaque capteur a ses propres specs
+  - **Évolutivité** : Ajouter une nouvelle spec sans modifier le schéma
+  - **Pas de valeurs null** : Seulement les specs pertinentes sont stockées
+  - **Index unifié** : Un seul index sur `specs.key` + `specs.value` couvre toutes les recherches
+
+**Inconvénient :** Requêtes plus complexes (`$elemMatch`, `$filter`)
+
+</details>
+
+---
+
 ## 🏗️ Phase 3 : Patterns architecturaux (45 min)
+
+> 📌 **Contexte SteamCity** : Ces patterns architecturaux sont essentiels pour un système IoT en production : tracer les modifications de configuration des capteurs (Versioning), gérer différents types d'événements dans une collection unifiée (Polymorphic), séparer les flux d'écriture et de lecture (CQRS), et gérer le cycle de vie des données (Archive).
 
 ### Pattern : Versioning des documents
 
@@ -1409,6 +1578,298 @@ const archivePipeline = [
 db.measurements.aggregate(archivePipeline)
 ```
 
+### Exercices sur les patterns architecturaux
+
+Ces exercices vous permettent de pratiquer les patterns vus dans cette phase.
+
+---
+
+#### Exercice : Implémenter le Versioning ⭐⭐☆
+
+**Objectif :** Créer un système qui garde l'historique des modifications d'un document.
+
+**Contexte :** Vous gérez la configuration des capteurs IoT. Chaque modification de configuration doit être tracée pour audit.
+
+**Étape 1 : Créer la structure initiale**
+
+```javascript
+db.sensor_configs.drop()
+db.sensor_configs_history.drop()
+
+// Configuration initiale d'un capteur
+db.sensor_configs.insertOne({
+    _id: "SENS-001",
+    version: 1,
+    name: "Capteur Rotonde",
+    sampling_interval: 300,  // 5 minutes en secondes
+    thresholds: {
+        temp_max: 35,
+        co2_max: 1000
+    },
+    updated_at: new Date(),
+    updated_by: "admin"
+})
+```
+
+**Étape 2 : Créer la fonction de mise à jour avec versioning**
+
+Complétez cette fonction :
+
+```javascript
+function updateConfigWithHistory(sensorId, newConfig, userId) {
+    // 1. Récupérer la config actuelle
+    const current = db.sensor_configs.findOne({_id: sensorId})
+
+    if (!current) {
+        throw new Error("Capteur non trouvé")
+    }
+
+    // 2. Sauvegarder la version actuelle dans l'historique
+    // TODO: Insérer dans sensor_configs_history avec :
+    // - sensor_id, version, les anciennes valeurs, archived_at
+
+
+    // 3. Mettre à jour avec la nouvelle version
+    // TODO: Utiliser $set et $inc pour incrémenter version
+
+}
+```
+
+📝 **Question 1 :** Pourquoi est-il important de sauvegarder AVANT de mettre à jour ?
+
+<details>
+<summary>💡 Solution</summary>
+
+```javascript
+function updateConfigWithHistory(sensorId, newConfig, userId) {
+    const current = db.sensor_configs.findOne({_id: sensorId})
+
+    if (!current) {
+        throw new Error("Capteur non trouvé")
+    }
+
+    // Sauvegarder dans l'historique
+    db.sensor_configs_history.insertOne({
+        sensor_id: sensorId,
+        version: current.version,
+        config: {
+            name: current.name,
+            sampling_interval: current.sampling_interval,
+            thresholds: current.thresholds
+        },
+        updated_by: current.updated_by,
+        archived_at: new Date()
+    })
+
+    // Mettre à jour avec nouvelle version
+    db.sensor_configs.updateOne(
+        {_id: sensorId},
+        {
+            $set: {
+                ...newConfig,
+                updated_at: new Date(),
+                updated_by: userId
+            },
+            $inc: {version: 1}
+        }
+    )
+}
+
+// Test
+updateConfigWithHistory("SENS-001", {
+    sampling_interval: 60,  // Passer à 1 minute
+    thresholds: {temp_max: 30, co2_max: 800}
+}, "technicien_42")
+
+// Vérifier
+print("Config actuelle:")
+printjson(db.sensor_configs.findOne({_id: "SENS-001"}))
+
+print("\nHistorique:")
+db.sensor_configs_history.find({sensor_id: "SENS-001"}).forEach(printjson)
+```
+
+**Réponse Q1 :** Si on met à jour d'abord et que l'insertion dans l'historique échoue, on perd la version précédente. En sauvegardant d'abord, on garantit qu'aucune version n'est perdue.
+
+</details>
+
+**Étape 3 : Requêter l'historique**
+
+```javascript
+// Faire 2 modifications supplémentaires
+updateConfigWithHistory("SENS-001", {name: "Capteur Rotonde v2"}, "admin")
+updateConfigWithHistory("SENS-001", {thresholds: {temp_max: 40, co2_max: 1200}}, "technicien_42")
+
+// Voir toutes les versions
+db.sensor_configs_history.find({sensor_id: "SENS-001"})
+    .sort({version: -1})
+    .toArray()
+```
+
+📝 **Question 2 :** Combien de versions sont dans l'historique ? _______
+
+📝 **Question 3 :** Quelle est la version actuelle dans `sensor_configs` ? _______
+
+<details>
+<summary>💡 Réponses</summary>
+
+- **Q2 :** 3 versions (v1, v2, v3 archivées)
+- **Q3 :** Version 4 (après 3 mises à jour)
+
+</details>
+
+---
+
+#### Exercice : Pattern Polymorphic pour les événements ⭐⭐☆
+
+**Objectif :** Stocker différents types d'événements dans une même collection.
+
+**Contexte :** Votre système IoT génère 3 types d'événements : mesures, alertes, et maintenances.
+
+**Étape 1 : Créer des événements de types différents**
+
+```javascript
+db.events.drop()
+
+// Événement type 1 : Mesure
+db.events.insertOne({
+    type: "measurement",
+    timestamp: new Date(),
+    sensor_id: "SENS-001",
+    data: {
+        temperature: 28.5,
+        humidity: 55,
+        co2: 450
+    }
+})
+
+// Événement type 2 : Alerte
+db.events.insertOne({
+    type: "alert",
+    timestamp: new Date(),
+    sensor_id: "SENS-001",
+    severity: "warning",
+    message: "Température élevée",
+    threshold: 25,
+    value: 28.5,
+    acknowledged: false
+})
+
+// Événement type 3 : Maintenance
+db.events.insertOne({
+    type: "maintenance",
+    timestamp: new Date(),
+    sensor_id: "SENS-001",
+    technician: "Jean Dupont",
+    actions: ["battery_check", "calibration"],
+    duration_minutes: 30,
+    notes: "RAS, batterie à 85%"
+})
+
+// Ajouter quelques événements supplémentaires
+db.events.insertMany([
+    {type: "measurement", timestamp: new Date(Date.now() - 60000), sensor_id: "SENS-002", data: {temperature: 22}},
+    {type: "alert", timestamp: new Date(Date.now() - 30000), sensor_id: "SENS-002", severity: "critical", message: "Capteur offline"},
+    {type: "measurement", timestamp: new Date(Date.now() - 120000), sensor_id: "SENS-001", data: {temperature: 27}}
+])
+```
+
+**Étape 2 : Requêtes polymorphiques**
+
+```javascript
+// Q1 : Tous les événements d'un capteur, triés par date
+db.events.find({sensor_id: "SENS-001"}).sort({timestamp: -1})
+
+// Q2 : Seulement les alertes non acquittées
+db.events.find({type: "alert", acknowledged: false})
+
+// Q3 : Compter les événements par type
+db.events.aggregate([
+    {$group: {_id: "$type", count: {$sum: 1}}},
+    {$sort: {count: -1}}
+])
+```
+
+📝 **Question 1 :** Combien d'événements de type "measurement" ? _______
+
+**Étape 3 : Créer des index partiels par type**
+
+```javascript
+// Index pour les mesures (le plus fréquent)
+db.events.createIndex(
+    {sensor_id: 1, timestamp: -1},
+    {partialFilterExpression: {type: "measurement"}}
+)
+
+// Index pour les alertes non acquittées
+db.events.createIndex(
+    {severity: 1, timestamp: -1},
+    {partialFilterExpression: {type: "alert", acknowledged: false}}
+)
+```
+
+📝 **Question 2 :** Pourquoi utiliser des index partiels plutôt qu'un index global ?
+
+<details>
+<summary>💡 Réponses</summary>
+
+- **Q1 :** 3 mesures
+- **Q2 :** Les index partiels sont plus petits et plus efficaces car :
+  - Les mesures représentent ~90% des événements → index dédié performant
+  - Les alertes non acquittées sont rares → petit index ciblé
+  - Économie d'espace disque et de RAM
+
+</details>
+
+**Étape 4 : Agrégation polymorphique avec $switch**
+
+```javascript
+// Résumé adapté au type d'événement
+db.events.aggregate([
+    {$match: {sensor_id: "SENS-001"}},
+    {$addFields: {
+        summary: {
+            $switch: {
+                branches: [
+                    {
+                        case: {$eq: ["$type", "measurement"]},
+                        then: {$concat: ["Mesure: ", {$toString: "$data.temperature"}, "°C"]}
+                    },
+                    {
+                        case: {$eq: ["$type", "alert"]},
+                        then: {$concat: ["⚠️ ", "$severity", ": ", "$message"]}
+                    },
+                    {
+                        case: {$eq: ["$type", "maintenance"]},
+                        then: {$concat: ["🔧 Maintenance par ", "$technician"]}
+                    }
+                ],
+                default: "Événement inconnu"
+            }
+        }
+    }},
+    {$project: {type: 1, timestamp: 1, summary: 1}},
+    {$sort: {timestamp: -1}}
+])
+```
+
+📝 **Question 3 :** Quel avantage offre le pattern Polymorphic par rapport à des collections séparées ?
+
+<details>
+<summary>💡 Réponse</summary>
+
+**Avantages du Polymorphic :**
+- **Timeline unifiée** : Voir tous les événements d'un capteur chronologiquement
+- **Requêtes simplifiées** : Un seul `find()` pour tout l'historique
+- **Flexibilité** : Facile d'ajouter de nouveaux types d'événements
+- **Moins de collections** : Maintenance simplifiée
+
+**Inconvénients :**
+- Index moins optimaux (besoin d'index partiels)
+- Schéma moins strict (champs différents selon le type)
+
+</details>
+
 ---
 
 ## 💡 Phase 4 : Cas pratique IoT (50 min)
@@ -1608,7 +2069,7 @@ Ces exercices utilisent les collections définies ci-dessus. Commencez par crée
 
 ---
 
-#### Exercice 11 : Créer et interroger les données IoT ⭐⭐☆
+#### Exercice 12 : Créer et interroger les données IoT ⭐⭐☆
 
 **Objectif :** Manipuler les collections IoT et comprendre leur structure.
 
@@ -1678,7 +2139,7 @@ db.current_state.find({battery_level: {$lt: 70}}, {_id: 1, battery_level: 1})
 
 ---
 
-#### Exercice 12 : Agrégation par zone ⭐⭐☆
+#### Exercice 13 : Agrégation par zone ⭐⭐☆
 
 **Objectif :** Calculer des statistiques par zone géographique.
 
@@ -1746,7 +2207,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 13 : Détecter les capteurs offline ⭐⭐☆
+#### Exercice 14 : Détecter les capteurs offline ⭐⭐☆
 
 **Objectif :** Identifier les capteurs qui ne répondent plus.
 
@@ -1833,7 +2294,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 14 : Simuler des mesures et créer des buckets ⭐⭐⭐
+#### Exercice 15 : Simuler des mesures et créer des buckets ⭐⭐⭐
 
 **Objectif :** Appliquer le pattern Bucket sur des données IoT.
 
@@ -1925,7 +2386,7 @@ db.hourly_buckets.findOne()
 
 ---
 
-#### Exercice 15 : Synthèse - Dashboard temps réel ⭐⭐⭐
+#### Exercice 16 : Synthèse - Dashboard temps réel ⭐⭐⭐
 
 **Objectif :** Créer une vue agrégée pour un dashboard.
 
@@ -2425,8 +2886,270 @@ db.setProfilingLevel(1, {slowms: 100})
 db.system.profile.find().sort({ts: -1}).limit(10)
 ```
 
+### Exercices pratiques
+
 ---
 
+#### Exercice 17 : Analyser et optimiser une requête avec explain() ⭐⭐☆
+
+**Objectif :** Comprendre l'impact des index sur les performances.
+
+**Étape 1 : Créer des données de test sans index**
+
+```javascript
+db.perf_test.drop()
+
+// Insérer 10 000 mesures simulées
+const docs = []
+for (let i = 0; i < 10000; i++) {
+    docs.push({
+        sensor_id: `SENS-${String(Math.floor(i / 100)).padStart(3, '0')}`,
+        timestamp: new Date(Date.now() - i * 60000),
+        temperature: 20 + Math.random() * 10,
+        zone: ["nord", "sud", "est", "ouest"][i % 4]
+    })
+}
+db.perf_test.insertMany(docs)
+
+print("Documents insérés:", db.perf_test.countDocuments())
+```
+
+**Étape 2 : Analyser une requête SANS index**
+
+```javascript
+// Requête : mesures du capteur SENS-050 des dernières 24h
+const query = {
+    sensor_id: "SENS-050",
+    timestamp: {$gte: new Date(Date.now() - 24*60*60*1000)}
+}
+
+// Analyser avec explain
+const explainNoIndex = db.perf_test.find(query).explain("executionStats")
+
+print("=== SANS INDEX ===")
+print("Stage:", explainNoIndex.queryPlanner.winningPlan.stage)
+print("Documents examinés:", explainNoIndex.executionStats.totalDocsExamined)
+print("Documents retournés:", explainNoIndex.executionStats.nReturned)
+print("Temps (ms):", explainNoIndex.executionStats.executionTimeMillis)
+```
+
+📝 **Question 1 :** Quel est le stage utilisé (COLLSCAN ou IXSCAN) ? _______
+
+📝 **Question 2 :** Combien de documents sont examinés vs retournés ? _______
+
+**Étape 3 : Créer un index et réanalyser**
+
+```javascript
+// Créer l'index ESR (Equality, Sort, Range)
+db.perf_test.createIndex({sensor_id: 1, timestamp: -1})
+
+// Réanalyser la même requête
+const explainWithIndex = db.perf_test.find(query).explain("executionStats")
+
+print("\n=== AVEC INDEX ===")
+print("Stage:", explainWithIndex.queryPlanner.winningPlan.stage)
+print("Documents examinés:", explainWithIndex.executionStats.totalDocsExamined)
+print("Documents retournés:", explainWithIndex.executionStats.nReturned)
+print("Temps (ms):", explainWithIndex.executionStats.executionTimeMillis)
+```
+
+📝 **Question 3 :** Quel est le ratio d'amélioration (docs examinés avant/après) ? _______
+
+**Étape 4 : Comparer les performances**
+
+```javascript
+// Tableau récapitulatif
+print("\n=== COMPARAISON ===")
+print("| Métrique | Sans index | Avec index |")
+print("|----------|------------|------------|")
+print(`| Stage | ${explainNoIndex.queryPlanner.winningPlan.stage} | ${explainWithIndex.queryPlanner.winningPlan.stage} |`)
+print(`| Docs examinés | ${explainNoIndex.executionStats.totalDocsExamined} | ${explainWithIndex.executionStats.totalDocsExamined} |`)
+print(`| Temps (ms) | ${explainNoIndex.executionStats.executionTimeMillis} | ${explainWithIndex.executionStats.executionTimeMillis} |`)
+```
+
+<details>
+<summary>💡 Réponses attendues</summary>
+
+- **Q1 :** COLLSCAN (scan de toute la collection)
+- **Q2 :** ~10 000 examinés pour ~100 retournés (ratio très mauvais)
+- **Q3 :** ~100× moins de documents examinés avec l'index
+
+**Leçon :** Un index bien conçu transforme une requête O(n) en O(log n + k) où k = résultats.
+
+</details>
+
+---
+
+#### Exercice 18 : Bulk operations vs insertions unitaires ⭐⭐☆
+
+**Objectif :** Mesurer le gain de performance des opérations bulk.
+
+**Étape 1 : Préparer les données de test**
+
+```javascript
+// Générer 1000 mesures à insérer
+const measurements = []
+for (let i = 0; i < 1000; i++) {
+    measurements.push({
+        sensor_id: `SENS-${String(i % 100).padStart(3, '0')}`,
+        timestamp: new Date(),
+        temperature: 20 + Math.random() * 10,
+        humidity: 40 + Math.random() * 20
+    })
+}
+```
+
+**Étape 2 : Insertion unitaire (méthode lente)**
+
+```javascript
+db.bulk_test_slow.drop()
+
+const startSlow = Date.now()
+
+// ❌ Insertion une par une
+for (const m of measurements) {
+    db.bulk_test_slow.insertOne(m)
+}
+
+const timeSlow = Date.now() - startSlow
+print(`Insertion unitaire: ${timeSlow} ms pour ${measurements.length} documents`)
+print(`Moyenne: ${(timeSlow / measurements.length).toFixed(2)} ms/doc`)
+```
+
+📝 **Question 1 :** Combien de temps prend l'insertion unitaire ? _______ ms
+
+**Étape 3 : Insertion bulk (méthode rapide)**
+
+```javascript
+db.bulk_test_fast.drop()
+
+const startFast = Date.now()
+
+// ✅ Insertion en bulk
+db.bulk_test_fast.insertMany(measurements)
+
+const timeFast = Date.now() - startFast
+print(`Insertion bulk: ${timeFast} ms pour ${measurements.length} documents`)
+print(`Moyenne: ${(timeFast / measurements.length).toFixed(3)} ms/doc`)
+```
+
+📝 **Question 2 :** Combien de temps prend l'insertion bulk ? _______ ms
+
+**Étape 4 : Calculer le gain**
+
+```javascript
+const speedup = (timeSlow / timeFast).toFixed(1)
+print(`\n🚀 Gain de performance: ${speedup}× plus rapide avec bulk!`)
+
+// Vérifier que les données sont identiques
+print(`\nVérification:`)
+print(`- Collection lente: ${db.bulk_test_slow.countDocuments()} docs`)
+print(`- Collection rapide: ${db.bulk_test_fast.countDocuments()} docs`)
+```
+
+📝 **Question 3 :** Quel est le facteur d'accélération ? _______×
+
+<details>
+<summary>💡 Réponses attendues</summary>
+
+- **Q1 :** ~2000-5000 ms (varie selon la connexion)
+- **Q2 :** ~50-200 ms
+- **Q3 :** 10× à 50× plus rapide
+
+**Pourquoi ?**
+- Insertion unitaire = 1000 allers-retours réseau
+- Insertion bulk = 1 seul aller-retour avec 1000 documents
+
+**Règle :** Toujours utiliser `insertMany()` ou `bulkWrite()` pour les insertions multiples.
+
+</details>
+
+---
+
+#### Exercice 19 : Mettre en place un index TTL ⭐⭐☆
+
+**Objectif :** Configurer la suppression automatique des données anciennes.
+
+**Étape 1 : Créer une collection avec TTL**
+
+```javascript
+db.ttl_demo.drop()
+
+// Créer l'index TTL (expiration après 60 secondes pour la démo)
+db.ttl_demo.createIndex(
+    {expire_at: 1},
+    {expireAfterSeconds: 0}  // Expire à la date exacte du champ
+)
+
+// Alternative : expirer 60 secondes après le champ created_at
+// db.ttl_demo.createIndex({created_at: 1}, {expireAfterSeconds: 60})
+```
+
+**Étape 2 : Insérer des documents avec différentes dates d'expiration**
+
+```javascript
+// Document qui expire dans 30 secondes
+db.ttl_demo.insertOne({
+    _id: "expire_soon",
+    data: "Ce document va disparaître dans 30 secondes",
+    expire_at: new Date(Date.now() + 30 * 1000)
+})
+
+// Document qui expire dans 2 minutes
+db.ttl_demo.insertOne({
+    _id: "expire_later",
+    data: "Ce document reste plus longtemps",
+    expire_at: new Date(Date.now() + 120 * 1000)
+})
+
+// Document sans expiration (pas de champ expire_at)
+db.ttl_demo.insertOne({
+    _id: "no_expire",
+    data: "Ce document ne sera jamais supprimé automatiquement"
+})
+
+print("Documents insérés:", db.ttl_demo.countDocuments())
+db.ttl_demo.find().forEach(doc => {
+    print(`- ${doc._id}: expire_at = ${doc.expire_at || 'jamais'}`)
+})
+```
+
+📝 **Question 1 :** Combien de documents avez-vous initialement ? _______
+
+**Étape 3 : Observer la suppression automatique**
+
+```javascript
+// Attendre et vérifier (le TTL s'exécute toutes les ~60 secondes)
+print("\nAttendez 60-90 secondes puis exécutez:")
+print('db.ttl_demo.find().forEach(doc => print(doc._id))')
+print("\nVous devriez voir 'expire_soon' disparaître.")
+```
+
+⏳ Attendez environ 90 secondes, puis exécutez :
+
+```javascript
+db.ttl_demo.find().forEach(doc => print(doc._id))
+```
+
+📝 **Question 2 :** Après ~90 secondes, quels documents restent ? _______
+
+📝 **Question 3 :** Le document `no_expire` est-il supprimé ? Pourquoi ? _______
+
+<details>
+<summary>💡 Réponses</summary>
+
+- **Q1 :** 3 documents
+- **Q2 :** `expire_later` et `no_expire` (ou seulement `no_expire` après 2+ min)
+- **Q3 :** Non, car il n'a pas de champ `expire_at`. Le TTL ignore les documents sans le champ indexé.
+
+**Points clés :**
+- Le processus TTL s'exécute toutes les ~60 secondes
+- Seuls les documents avec le champ Date indexé sont concernés
+- `expireAfterSeconds: 0` = expire à la date exacte du champ
+
+</details>
+
+---
 
 ## 🎯 Auto-évaluation
 
