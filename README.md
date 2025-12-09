@@ -32,6 +32,7 @@ Cette séance est **cruciale** pour votre projet :
 - TP1 et TP2 complétés
 - Compréhension des pipelines d'agrégation
 - MongoDB Atlas configuré et accessible
+
 ---
 
 ## Création de votre fork du TP
@@ -44,6 +45,7 @@ GitHub va vous créer un dépôt contenant un fork du dépôt 'IUTInfoAix-R510/t
 
 ---
 
+## Mise en place de l'environnement
 
 ### Initialisation des données
 
@@ -3573,3 +3575,50 @@ Si vous souhaitez approfondir après ce TP :
    - Stratégies pour l'IoT à grande échelle
 
 ---
+
+## 🎓 Conclusion
+
+### Ce que vous avez appris
+
+Au cours de ce TP, vous avez acquis les compétences essentielles pour concevoir des modèles de données MongoDB performants et scalables :
+
+**Modélisation des données**
+- Maîtriser le choix entre **embedding** et **référencement** selon les patterns d'accès
+- Comprendre les implications de la **cardinalité** (1:1, 1:N, N:N) sur la structure des documents
+- Anticiper les problèmes liés aux **tableaux qui grandissent** indéfiniment
+
+**Design Patterns MongoDB**
+- **Subset** : Optimiser les lectures en embarquant uniquement les données fréquemment accédées
+- **Computed** : Pré-calculer les statistiques pour éviter les agrégations coûteuses
+- **Bucket** : Regrouper les données temporelles pour réduire le nombre de documents
+- **Attribute** : Gérer les métadonnées flexibles avec des spécifications variables
+- **Outlier** : Traiter les cas exceptionnels sans pénaliser les cas normaux
+
+**Patterns architecturaux**
+- **Versioning** : Conserver l'historique des modifications
+- **Polymorphic** : Stocker des documents de structures différentes dans une même collection
+- **CQRS** : Séparer les modèles de lecture et d'écriture pour optimiser chaque cas
+
+**Optimisation**
+- Analyser les performances avec `explain()` et créer des index adaptés
+- Utiliser les **bulk operations** pour les insertions massives
+- Configurer des **index TTL** pour la rétention automatique des données
+
+### Préparation au TP4 : Projet SteamCity
+
+Le **TP4** est le projet fil rouge où vous allez mettre en pratique l'ensemble des compétences acquises pour construire une **application IoT complète** de monitoring urbain.
+
+Vous devrez concevoir et implémenter :
+
+| Composant | Patterns à utiliser | Ce que vous avez appris |
+|-----------|---------------------|-------------------------|
+| Stockage des mesures | Bucket + Computed | Phase 2 - Exercices 8, 9 |
+| État des capteurs | Subset + Outlier | Phase 2 - Exercices 7, 12 |
+| Historique des configurations | Versioning | Phase 3 - Exercice 13 |
+| Événements hétérogènes | Polymorphic | Phase 3 - Exercice 14 |
+| Dashboard temps réel | $facet + agrégations | Phase 4 - Exercice 19 |
+| Rétention des données | Index TTL | Phase 5 - Exercice 22 |
+
+> 💡 **Conseil** : Relisez les exercices de la Phase 4 avant de commencer le TP4. Ils constituent une base solide pour votre implémentation du projet SteamCity.
+
+**Bon courage pour le projet !** 🚀
