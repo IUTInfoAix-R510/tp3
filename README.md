@@ -33,6 +33,29 @@ Cette séance est **cruciale** pour votre projet :
 - Compréhension des pipelines d'agrégation
 - MongoDB Atlas configuré et accessible
 
+### Initialisation des données
+
+Avant de commencer les exercices, vous devez initialiser les collections de test :
+
+```javascript
+// Dans mongosh, après connexion à votre cluster Atlas
+load("setup.js")
+
+// Ou depuis le terminal
+mongosh "mongodb+srv://votre-cluster.mongodb.net/tp3" --file setup.js
+```
+
+Le script `setup.js` crée toutes les collections nécessaires :
+- **Phase 1** : `authors`, `orders`
+- **Phase 2** : `posts_v1`, `posts_v2`, `comments`, `products`, `products_v2`, `sensor_v1`, `sensor_v2`, `sensors_catalog`, `sensors_alerts`
+- **Phase 3** : `sensor_configs`, `sensor_configs_history`, `events`
+- **Phase 4** : `current_state`, `raw_measurements`
+- **Phase 5** : Collections de test pour les exercices d'optimisation
+
+### Fichier de réponses
+
+Utilisez le fichier `playground-tp3.mongodb.js` pour écrire et tester vos réponses. Ce fichier est structuré avec tous les exercices et des zones `// TODO` à compléter.
+
 ---
 
 ## 🗺️ Vue d'ensemble des exercices
