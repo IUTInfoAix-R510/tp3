@@ -1330,6 +1330,221 @@ db.sensors_catalog.findOne({_id: "SENS-TEMP-001"}).specs
 
 ---
 
+#### Exercice 12 : Pattern Outlier pour gérer les capteurs viraux ⭐⭐⭐
+
+**Objectif :** Gérer les cas exceptionnels où un capteur génère beaucoup plus de données que la normale.
+
+**Contexte SteamCity :** La plupart de vos capteurs génèrent ~288 alertes/an. Mais certains capteurs situés dans des zones problématiques (intersection dangereuse, zone industrielle) peuvent générer des milliers d'alertes. Comment éviter que ces "outliers" ne fassent exploser la taille des documents ?
+
+**Le problème :**
+
+```javascript
+// ❌ Sans pattern Outlier : document qui explose
+{
+    _id: "SENS-PROBLEM-001",
+    name: "Capteur zone industrielle",
+
+    // Ce tableau peut devenir ÉNORME pour certains capteurs
+    alerts: [
+        {date: ISODate("..."), type: "co2_high", value: 1200},
+        {date: ISODate("..."), type: "pm25_high", value: 85},
+        // ... potentiellement 10 000+ alertes !
+    ]
+}
+// → Risque d'atteindre la limite de 16 Mo
+// → Performances dégradées pour TOUS les capteurs
+```
+
+**Étape 1 : Structure avec Pattern Outlier**
+
+```javascript
+db.sensors_alerts.drop()
+db.alerts_overflow.drop()
+
+// Capteur normal : alertes directement dans le document
+db.sensors_alerts.insertOne({
+    _id: "SENS-NORMAL-001",
+    name: "Capteur parc municipal",
+    location: "Parc Jourdan",
+
+    has_overflow: false,  // Flag important !
+    alert_count: 3,
+
+    // Toutes les alertes tiennent dans le document
+    alerts: [
+        {date: new Date("2024-01-10"), type: "temp_high", value: 32},
+        {date: new Date("2024-01-15"), type: "temp_high", value: 31},
+        {date: new Date("2024-02-01"), type: "humidity_low", value: 20}
+    ]
+})
+
+// Capteur outlier : seulement les dernières alertes + flag
+db.sensors_alerts.insertOne({
+    _id: "SENS-OUTLIER-001",
+    name: "Capteur zone industrielle",
+    location: "Zone Industrielle Les Milles",
+
+    has_overflow: true,   // ⚠️ Indique qu'il y a des alertes en overflow
+    alert_count: 2547,    // Nombre total réel
+
+    // Seulement les 50 dernières alertes
+    alerts: [
+        {date: new Date("2024-03-15T10:30:00"), type: "co2_high", value: 1100},
+        {date: new Date("2024-03-15T10:25:00"), type: "pm25_high", value: 78},
+        {date: new Date("2024-03-15T10:20:00"), type: "co2_high", value: 1050}
+        // ... max 50 alertes ici
+    ]
+})
+
+print("Capteurs créés:", db.sensors_alerts.countDocuments())
+```
+
+**Étape 2 : Simuler un overflow**
+
+```javascript
+// Fonction pour ajouter une alerte avec gestion de l'overflow
+function addAlert(sensorId, alert) {
+    const MAX_ALERTS_IN_DOC = 50
+
+    // Récupérer le capteur
+    const sensor = db.sensors_alerts.findOne({_id: sensorId})
+
+    if (!sensor) {
+        print("Capteur non trouvé")
+        return
+    }
+
+    // Vérifier si on dépasse la limite
+    if (sensor.alerts.length >= MAX_ALERTS_IN_DOC) {
+        // Marquer comme overflow
+        if (!sensor.has_overflow) {
+            db.sensors_alerts.updateOne(
+                {_id: sensorId},
+                {$set: {has_overflow: true}}
+            )
+        }
+
+        // Déplacer la plus ancienne alerte vers overflow
+        const oldestAlert = sensor.alerts[sensor.alerts.length - 1]
+        db.alerts_overflow.insertOne({
+            sensor_id: sensorId,
+            ...oldestAlert
+        })
+
+        // Retirer la plus ancienne du document principal
+        db.sensors_alerts.updateOne(
+            {_id: sensorId},
+            {$pop: {alerts: 1}}  // Retire le dernier élément
+        )
+    }
+
+    // Ajouter la nouvelle alerte au début
+    db.sensors_alerts.updateOne(
+        {_id: sensorId},
+        {
+            $push: {alerts: {$each: [alert], $position: 0}},
+            $inc: {alert_count: 1}
+        }
+    )
+}
+
+// Simuler 60 alertes sur le capteur normal (va déclencher overflow)
+for (let i = 0; i < 60; i++) {
+    addAlert("SENS-NORMAL-001", {
+        date: new Date(Date.now() - i * 3600000),
+        type: i % 2 === 0 ? "co2_high" : "temp_high",
+        value: 100 + i
+    })
+}
+
+print("\nAprès 60 alertes ajoutées:")
+const sensor = db.sensors_alerts.findOne({_id: "SENS-NORMAL-001"})
+print("- has_overflow:", sensor.has_overflow)
+print("- alert_count:", sensor.alert_count)
+print("- alerts dans doc:", sensor.alerts.length)
+print("- alerts en overflow:", db.alerts_overflow.countDocuments({sensor_id: "SENS-NORMAL-001"}))
+```
+
+📝 **Question 1 :** Après les 60 alertes, combien sont dans le document principal ? _______
+
+📝 **Question 2 :** Combien sont dans la collection overflow ? _______
+
+**Étape 3 : Requêter avec gestion de l'overflow**
+
+```javascript
+// Fonction pour récupérer TOUTES les alertes d'un capteur
+function getAllAlerts(sensorId, limit = 100) {
+    const sensor = db.sensors_alerts.findOne({_id: sensorId})
+
+    if (!sensor) return []
+
+    // Si pas d'overflow, retourner directement
+    if (!sensor.has_overflow) {
+        return sensor.alerts.slice(0, limit)
+    }
+
+    // Sinon, combiner les deux sources
+    const fromDoc = sensor.alerts
+    const remaining = limit - fromDoc.length
+
+    if (remaining <= 0) {
+        return fromDoc.slice(0, limit)
+    }
+
+    // Récupérer le reste depuis overflow
+    const fromOverflow = db.alerts_overflow
+        .find({sensor_id: sensorId})
+        .sort({date: -1})
+        .limit(remaining)
+        .toArray()
+
+    return [...fromDoc, ...fromOverflow]
+}
+
+// Test
+const allAlerts = getAllAlerts("SENS-NORMAL-001", 20)
+print("\n20 dernières alertes de SENS-NORMAL-001:")
+allAlerts.forEach((a, i) => print(`${i+1}. ${a.type}: ${a.value}`))
+```
+
+**Étape 4 : Comparer les tailles de documents**
+
+```javascript
+// Taille du capteur avec overflow géré
+const sensorWithOverflow = db.sensors_alerts.findOne({_id: "SENS-NORMAL-001"})
+print("\nTaille capteur (overflow géré):", Object.bsonsize(sensorWithOverflow), "bytes")
+
+// Simuler ce que ça aurait été SANS pattern Outlier
+const hypotheticalDoc = {
+    ...sensorWithOverflow,
+    alerts: [...sensorWithOverflow.alerts, ...db.alerts_overflow.find({sensor_id: "SENS-NORMAL-001"}).toArray()]
+}
+print("Taille hypothétique (sans outlier):", Object.bsonsize(hypotheticalDoc), "bytes")
+print("Économie:", Object.bsonsize(hypotheticalDoc) - Object.bsonsize(sensorWithOverflow), "bytes")
+```
+
+📝 **Question 3 :** Quel est l'avantage principal du Pattern Outlier ?
+
+<details>
+<summary>💡 Réponses</summary>
+
+- **Q1 :** 50 alertes (le maximum configuré)
+- **Q2 :** 13 alertes (60 ajoutées - 50 gardées + 3 initiales = 13 en overflow)
+- **Q3 :**
+  - **Performance prévisible** : Les documents ont une taille maximale garantie
+  - **Pas d'impact sur les capteurs normaux** : Seuls les outliers utilisent la collection overflow
+  - **Requêtes efficaces** : Les 50 dernières alertes sont toujours accessibles en O(1)
+  - **Scalabilité** : On peut gérer des millions d'alertes sans dégrader le système
+
+**Quand utiliser ce pattern ?**
+- Distribution inégale des données (loi de Pareto : 20% des capteurs génèrent 80% des alertes)
+- Besoin d'accès rapide aux données récentes
+- Taille de document imprévisible
+
+</details>
+
+---
+
 ## 🏗️ Phase 3 : Patterns architecturaux (45 min)
 
 > 📌 **Contexte SteamCity** : Ces patterns architecturaux sont essentiels pour un système IoT en production : tracer les modifications de configuration des capteurs (Versioning), gérer différents types d'événements dans une collection unifiée (Polymorphic), séparer les flux d'écriture et de lecture (CQRS), et gérer le cycle de vie des données (Archive).
@@ -2069,7 +2284,7 @@ Ces exercices utilisent les collections définies ci-dessus. Commencez par crée
 
 ---
 
-#### Exercice 12 : Créer et interroger les données IoT ⭐⭐☆
+#### Exercice 13 : Créer et interroger les données IoT ⭐⭐☆
 
 **Objectif :** Manipuler les collections IoT et comprendre leur structure.
 
@@ -2139,7 +2354,7 @@ db.current_state.find({battery_level: {$lt: 70}}, {_id: 1, battery_level: 1})
 
 ---
 
-#### Exercice 13 : Agrégation par zone ⭐⭐☆
+#### Exercice 14 : Agrégation par zone ⭐⭐☆
 
 **Objectif :** Calculer des statistiques par zone géographique.
 
@@ -2207,7 +2422,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 14 : Détecter les capteurs offline ⭐⭐☆
+#### Exercice 15 : Détecter les capteurs offline ⭐⭐☆
 
 **Objectif :** Identifier les capteurs qui ne répondent plus.
 
@@ -2294,7 +2509,7 @@ db.current_state.aggregate([
 
 ---
 
-#### Exercice 15 : Simuler des mesures et créer des buckets ⭐⭐⭐
+#### Exercice 16 : Simuler des mesures et créer des buckets ⭐⭐⭐
 
 **Objectif :** Appliquer le pattern Bucket sur des données IoT.
 
@@ -2386,7 +2601,7 @@ db.hourly_buckets.findOne()
 
 ---
 
-#### Exercice 16 : Synthèse - Dashboard temps réel ⭐⭐⭐
+#### Exercice 17 : Synthèse - Dashboard temps réel ⭐⭐⭐
 
 **Objectif :** Créer une vue agrégée pour un dashboard.
 
@@ -2890,7 +3105,7 @@ db.system.profile.find().sort({ts: -1}).limit(10)
 
 ---
 
-#### Exercice 17 : Analyser et optimiser une requête avec explain() ⭐⭐☆
+#### Exercice 18 : Analyser et optimiser une requête avec explain() ⭐⭐☆
 
 **Objectif :** Comprendre l'impact des index sur les performances.
 
@@ -2980,7 +3195,7 @@ print(`| Temps (ms) | ${explainNoIndex.executionStats.executionTimeMillis} | ${e
 
 ---
 
-#### Exercice 18 : Bulk operations vs insertions unitaires ⭐⭐☆
+#### Exercice 19 : Bulk operations vs insertions unitaires ⭐⭐☆
 
 **Objectif :** Mesurer le gain de performance des opérations bulk.
 
@@ -3066,7 +3281,7 @@ print(`- Collection rapide: ${db.bulk_test_fast.countDocuments()} docs`)
 
 ---
 
-#### Exercice 19 : Mettre en place un index TTL ⭐⭐☆
+#### Exercice 20 : Mettre en place un index TTL ⭐⭐☆
 
 **Objectif :** Configurer la suppression automatique des données anciennes.
 
