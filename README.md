@@ -129,26 +129,17 @@ graph LR
 
 #### La matrice de décision
 
-```javascript
-// Facteurs à évaluer pour chaque relation
-const decisionFactors = {
-    // Cardinalité
-    relationship: "1:N",        // 1:1, 1:N, N:N
-    N_size: 100,                // Taille maximale de N
-    
-    // Patterns d'accès
-    read_together: 0.95,        // Fréquence de lecture conjointe (0-1)
-    write_ratio: 0.1,           // Ratio écriture/lecture (0-1)
-    
-    // Contraintes
-    document_growth: "bounded",  // bounded, unbounded
-    data_volatility: "low",      // low, medium, high
-    
-    // Performance
-    query_isolation: false,      // Besoin de requêter séparément
-    atomic_updates: true         // Besoin de transactions
-};
-```
+Pour chaque relation, posez-vous ces questions :
+
+| Question | → Embedding | → Référencement |
+|----------|-------------|-----------------|
+| **Cardinalité ?** | 1:1 ou 1:few (< 20) | 1:many ou N:N |
+| **Lus ensemble ?** | Oui, presque toujours | Non, souvent séparément |
+| **Taille bornée ?** | Oui, croissance limitée | Non, peut croître indéfiniment |
+| **Fréquence de mise à jour ?** | Rarement modifié | Souvent modifié |
+| **Besoin d'accès indépendant ?** | Non | Oui, requêtes séparées |
+
+**Règle simple :** Si vous avez ≥ 3 réponses dans la colonne "Référencement", privilégiez les références.
 
 ### 1.3 Exercices
 
