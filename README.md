@@ -66,6 +66,8 @@ Le script `setup.js` crée toutes les collections nécessaires :
 - **Phase 4** : `current_state`, `raw_measurements`
 - **Phase 5** : Collections de test pour les exercices d'optimisation
 
+Si vous n'avez pas mongosh installé, vous pouvez copier/coller le contenu du fichier dans votre playground.
+
 ### Fichier de réponses
 
 Utilisez le fichier `playground-tp3.mongodb.js` pour écrire et tester vos réponses. Ce fichier est structuré avec tous les exercices et des zones `// TODO` à compléter.
