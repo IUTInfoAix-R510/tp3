@@ -39,7 +39,7 @@ Cette séance est **cruciale** pour votre projet :
 
 La première chose que vous allez faire est de créer un fork personnel du présent dépôt. Pour ce faire, rendez-vous sur le lien suivant :
 
-<https://classroom.github.com/a/>
+<https://classroom.github.com/a/PPyRpK56>
 
 GitHub va vous créer un dépôt contenant un fork du dépôt 'IUTInfoAix-R510/tp3' et s'appelant 'IUTInfoAix-R510-2025/tp3-votreUsername'. Vous apparaîtrez automatiquement comme contributeur de ce projet pour y pousser votre travail.
 
@@ -222,11 +222,6 @@ Ces exercices vous permettent de pratiquer le choix entre embedding et référen
 - On affiche toujours le nom et avatar de l'auteur avec l'article
 - Le profil auteur (bio, liens sociaux) est rarement consulté
 
-```javascript
-// Analysez et proposez votre modélisation :
-
-```
-
 <details>
 <summary>💡 Solution</summary>
 
@@ -282,11 +277,6 @@ Ces exercices vous permettent de pratiquer le choix entre embedding et référen
 - Une commande contient 1 à 10 produits
 - Le prix d'un produit peut changer après la commande
 - On doit garder le prix au moment de l'achat
-
-```javascript
-// Analysez et proposez votre modélisation :
-
-```
 
 <details>
 <summary>💡 Solution</summary>
@@ -355,11 +345,6 @@ Ces exercices vous permettent de pratiquer le choix entre embedding et référen
 - Les adresses sont toujours lues avec l'utilisateur (page profil, checkout)
 - Une adresse appartient à un seul utilisateur
 
-```javascript
-// Analysez et proposez votre modélisation :
-
-```
-
 <details>
 <summary>💡 Solution</summary>
 
@@ -418,11 +403,6 @@ Ces exercices vous permettent de pratiquer le choix entre embedding et référen
 - Un étudiant peut suivre 5-20 cours
 - Un cours peut avoir 10-500 étudiants
 - On veut afficher "Mes cours" pour un étudiant et "Liste des inscrits" pour un cours
-
-```javascript
-// Analysez et proposez votre modélisation :
-
-```
 
 <details>
 <summary>💡 Solution</summary>
@@ -518,7 +498,7 @@ Pour chaque situation, indiquez **Embedding** ou **Référencement** et justifie
 
 ## 🎨 Phase 2 : Les Design Patterns MongoDB (75 min)
 
-> 📌 **Fil rouge SteamCity** : À partir de cette phase, nous nous concentrons sur le projet IoT de ville intelligente. Les patterns que vous allez découvrir sont directement applicables à la gestion des capteurs environnementaux, des mesures temps réel et des alertes.
+> 📌 **Fil rouge SteamCity** : À partir de cette phase, nous nous concentrons sur le projet de Plateforme IoT pour la ville intelligente. Les patterns que vous allez découvrir sont directement applicables à la gestion des capteurs environnementaux, des mesures temps réel et des alertes.
 
 ### Pattern : Subset (Sous-ensemble)
 
@@ -726,7 +706,7 @@ db.products.find({
 
 ### Exercices guidés sur les patterns
 
-Ces exercices sont conçus pour être réalisés **sur machine**, pas à pas. Chaque exercice vous guide progressivement vers la découverte et l'application d'un pattern.
+Ces exercices sont conçus pour être réalisés pas à pas. Chaque exercice vous guide progressivement vers la découverte et l'application d'un pattern. Prenez le temps de réfléchir à chaque étape plutôt que d'exécuter aveuglément les commandes données. Ce qui compte c'est que vous reteniez l'usage de chaque pattern pour pouvoir les réutiliser au bon moment.
 
 ---
 
@@ -767,7 +747,7 @@ const post = db.posts_v1.findOne({_id: "post1"})
 Object.bsonsize(post)
 ```
 
-📝 **Question 1 :** Quelle est la taille en octets ? _______ bytes
+📝 **Question 1 :** Quelle est la taille en octets ?
 
 **Étape 3 : Simuler un post viral avec 2000 commentaires**
 
@@ -789,9 +769,9 @@ const bigPost = db.posts_v1.findOne({_id: "post1"})
 Object.bsonsize(bigPost)
 ```
 
-📝 **Question 2 :** Quelle est la nouvelle taille ? _______ bytes
+📝 **Question 2 :** Quelle est la nouvelle taille ?
 
-📝 **Question 3 :** Sachant que la limite MongoDB est de 16 Mo, combien de commentaires pourriez-vous avoir avant d'atteindre cette limite ? _______
+📝 **Question 3 :** Sachant que la limite MongoDB est de 16 Mo, combien de commentaires pourriez-vous avoir avant d'atteindre cette limite ?
 
 **Problèmes identifiés :**
 1. Document de plus en plus gros → transfert réseau lent
@@ -869,9 +849,8 @@ print("Compteur total:", post.comment_count)
 Object.bsonsize(post)
 ```
 
-📝 **Question 1 :** Combien de commentaires sont dans `recent_comments` ? _______
-
-📝 **Question 2 :** Quelle est la taille du document ? _______
+📝 **Question 1 :** Combien de commentaires sont dans `recent_comments` ?
+📝 **Question 2 :** Quelle est la taille du document ? 
 
 **Étape 4 : Comparer les performances**
 
@@ -883,7 +862,7 @@ db.posts_v1.find({_id: "post1"}).explain("executionStats").executionStats.totalD
 db.posts_v2.find({_id: "post1"}).explain("executionStats").executionStats.totalDocsExamined
 ```
 
-📝 **Question 3 :** Les deux examinent 1 document, mais lequel transfère moins de données ? _______
+📝 **Question 3 :** Les deux examinent 1 document, mais lequel transfère moins de données ?
 
 **Bénéfices du Pattern Subset :**
 | Aspect | Sans Subset (v1) | Avec Subset (v2) |
@@ -930,7 +909,7 @@ db.products.aggregate([
 ])
 ```
 
-📝 **Question 1 :** Cette agrégation doit être exécutée à chaque affichage de la page produit. Est-ce efficace ? _______
+📝 **Question 1 :** Cette agrégation doit être exécutée à chaque affichage de la page produit. Est-ce efficace ?
 
 **Étape 2 : Appliquer le Pattern Computed**
 
@@ -989,9 +968,9 @@ addReview("prod1", {user: "frank", rating: 4, text: "Bien!"})
 db.products_v2.findOne({_id: "prod1"}).stats
 ```
 
-📝 **Question 2 :** Après l'ajout, quelle est la nouvelle moyenne ? _______
+📝 **Question 2 :** Après l'ajout, quelle est la nouvelle moyenne ?
 
-📝 **Question 3 :** Combien de requêtes faut-il pour afficher la moyenne sur la page produit maintenant ? _______
+📝 **Question 3 :** Combien de requêtes faut-il pour afficher la moyenne sur la page produit maintenant ? 
 
 <details>
 <summary>💡 Réponses</summary>
@@ -1032,7 +1011,7 @@ for (let i = 0; i < 288; i++) {
 print("Documents créés:", db.sensor_v1.countDocuments())
 ```
 
-📝 **Question 1 :** Combien de documents pour 1 capteur sur 1 an ? _______
+📝 **Question 1 :** Combien de documents pour 1 capteur sur 1 an ?
 
 **Étape 2 : Pattern Bucket - grouper par heure**
 
@@ -1089,9 +1068,9 @@ for (let i = 0; i < 288; i++) {
 print("Buckets créés:", db.sensor_v2.countDocuments())
 ```
 
-📝 **Question 2 :** Combien de buckets pour 24h ? _______
+📝 **Question 2 :** Combien de buckets pour 24h ?
 
-📝 **Question 3 :** Combien de documents pour 1 capteur sur 1 an avec les buckets ? _______
+📝 **Question 3 :** Combien de documents pour 1 capteur sur 1 an avec les buckets ?
 
 **Étape 3 : Comparer les performances**
 
@@ -1331,7 +1310,7 @@ db.sensors_catalog.find({
 }, {name: 1, type: 1})
 ```
 
-📝 **Question 1 :** Combien de capteurs ont une spécification "precision" ? _______
+📝 **Question 1 :** Combien de capteurs ont une spécification "precision" ?
 
 **Étape 3 : Requêtes sur les attributs**
 
@@ -1358,7 +1337,7 @@ db.sensors_catalog.aggregate([
 ])
 ```
 
-📝 **Question 2 :** Combien de capteurs ont une spécification "range_max" ? _______
+📝 **Question 2 :** Combien de capteurs ont une spécification "range_max" ?
 
 **Étape 4 : Ajouter une nouvelle spec à un capteur existant**
 
@@ -1531,9 +1510,9 @@ print("- alerts dans doc:", sensor.alerts.length)
 print("- alerts en overflow:", db.alerts_overflow.countDocuments({sensor_id: "SENS-NORMAL-001"}))
 ```
 
-📝 **Question 1 :** Après les 60 alertes, combien sont dans le document principal ? _______
+📝 **Question 1 :** Après les 60 alertes, combien sont dans le document principal ?
 
-📝 **Question 2 :** Combien sont dans la collection overflow ? _______
+📝 **Question 2 :** Combien sont dans la collection overflow ?
 
 **Étape 3 : Requêter avec gestion de l'overflow**
 
@@ -1987,9 +1966,9 @@ db.sensor_configs_history.find({sensor_id: "SENS-001"})
     .toArray()
 ```
 
-📝 **Question 2 :** Combien de versions sont dans l'historique ? _______
+📝 **Question 2 :** Combien de versions sont dans l'historique ?
 
-📝 **Question 3 :** Quelle est la version actuelle dans `sensor_configs` ? _______
+📝 **Question 3 :** Quelle est la version actuelle dans `sensor_configs` ?
 
 <details>
 <summary>💡 Réponses</summary>
@@ -2071,7 +2050,7 @@ db.events.aggregate([
 ])
 ```
 
-📝 **Question 1 :** Combien d'événements de type "measurement" ? _______
+📝 **Question 1 :** Combien d'événements de type "measurement" ?
 
 **Étape 3 : Créer des index partiels par type**
 
@@ -2403,11 +2382,11 @@ db.current_state.find({status: "online"})
 db.current_state.find({battery_level: {$lt: 70}}, {_id: 1, battery_level: 1})
 ```
 
-📝 **Question 1 :** Combien de capteurs sont en ligne ? _______
+📝 **Question 1 :** Combien de capteurs sont en ligne ?
 
-📝 **Question 2 :** Quel capteur a la température la plus élevée ? _______
+📝 **Question 2 :** Quel capteur a la température la plus élevée ?
 
-📝 **Question 3 :** Combien de capteurs ont une batterie < 70% ? _______
+📝 **Question 3 :** Combien de capteurs ont une batterie < 70% ?
 
 <details>
 <summary>💡 Réponses</summary>
@@ -2456,7 +2435,7 @@ db.current_state.aggregate([
 ])
 ```
 
-📝 **Question 1 :** Quelle zone a la température moyenne la plus élevée ? _______
+📝 **Question 1 :** Quelle zone a la température moyenne la plus élevée ? 
 
 **Étape 2 : Ajouter une alerte sur les zones chaudes**
 
@@ -2476,7 +2455,7 @@ db.current_state.aggregate([
 ])
 ```
 
-📝 **Question 2 :** Combien de zones déclenchent une alerte ? _______
+📝 **Question 2 :** Combien de zones déclenchent une alerte ? 
 
 <details>
 <summary>💡 Réponses</summary>
@@ -2511,7 +2490,7 @@ db.current_state.find({
 })
 ```
 
-📝 **Question 1 :** Quel(s) capteur(s) sont détectés ? _______
+📝 **Question 1 :** Quel(s) capteur(s) sont détectés ? 
 
 **Étape 2 : Pipeline avec calcul du temps offline**
 
@@ -2563,7 +2542,7 @@ db.current_state.aggregate([
 ])
 ```
 
-📝 **Question 2 :** Quelle est la sévérité pour SENS-003 ? _______
+📝 **Question 2 :** Quelle est la sévérité pour SENS-003 ? 
 
 <details>
 <summary>💡 Réponses</summary>
@@ -2653,9 +2632,9 @@ db.raw_measurements.aggregate([
 db.hourly_buckets.findOne()
 ```
 
-📝 **Question 1 :** Combien de mesures dans le bucket ? _______
+📝 **Question 1 :** Combien de mesures dans le bucket ? 
 
-📝 **Question 2 :** Comparez : 12 documents raw vs 1 bucket. Quel gain ? _______
+📝 **Question 2 :** Comparez : 12 documents raw vs 1 bucket. Quel gain ? 
 
 <details>
 <summary>💡 Réponses</summary>
@@ -2712,7 +2691,7 @@ db.current_state.aggregate([
 ])
 ```
 
-📝 **Question :** Cette requête retourne combien de vues différentes ? _______
+📝 **Question :** Cette requête retourne combien de vues différentes ? 
 
 <details>
 <summary>💡 Réponse</summary>
@@ -3214,9 +3193,9 @@ print("Documents retournés:", explainNoIndex.executionStats.nReturned)
 print("Temps (ms):", explainNoIndex.executionStats.executionTimeMillis)
 ```
 
-📝 **Question 1 :** Quel est le stage utilisé (COLLSCAN ou IXSCAN) ? _______
+📝 **Question 1 :** Quel est le stage utilisé (COLLSCAN ou IXSCAN) ? 
 
-📝 **Question 2 :** Combien de documents sont examinés vs retournés ? _______
+📝 **Question 2 :** Combien de documents sont examinés vs retournés ? 
 
 **Étape 3 : Créer un index et réanalyser**
 
@@ -3234,7 +3213,7 @@ print("Documents retournés:", explainWithIndex.executionStats.nReturned)
 print("Temps (ms):", explainWithIndex.executionStats.executionTimeMillis)
 ```
 
-📝 **Question 3 :** Quel est le ratio d'amélioration (docs examinés avant/après) ? _______
+📝 **Question 3 :** Quel est le ratio d'amélioration (docs examinés avant/après) ? 
 
 **Étape 4 : Comparer les performances**
 
@@ -3297,7 +3276,7 @@ print(`Insertion unitaire: ${timeSlow} ms pour ${measurements.length} documents`
 print(`Moyenne: ${(timeSlow / measurements.length).toFixed(2)} ms/doc`)
 ```
 
-📝 **Question 1 :** Combien de temps prend l'insertion unitaire ? _______ ms
+📝 **Question 1 :** Combien de temps prend l'insertion unitaire ? 
 
 **Étape 3 : Insertion bulk (méthode rapide)**
 
@@ -3314,7 +3293,7 @@ print(`Insertion bulk: ${timeFast} ms pour ${measurements.length} documents`)
 print(`Moyenne: ${(timeFast / measurements.length).toFixed(3)} ms/doc`)
 ```
 
-📝 **Question 2 :** Combien de temps prend l'insertion bulk ? _______ ms
+📝 **Question 2 :** Combien de temps prend l'insertion bulk ?
 
 **Étape 4 : Calculer le gain**
 
@@ -3328,7 +3307,7 @@ print(`- Collection lente: ${db.bulk_test_slow.countDocuments()} docs`)
 print(`- Collection rapide: ${db.bulk_test_fast.countDocuments()} docs`)
 ```
 
-📝 **Question 3 :** Quel est le facteur d'accélération ? _______×
+📝 **Question 3 :** Quel est le facteur d'accélération ? 
 
 <details>
 <summary>💡 Réponses attendues</summary>
@@ -3395,7 +3374,7 @@ db.ttl_demo.find().forEach(doc => {
 })
 ```
 
-📝 **Question 1 :** Combien de documents avez-vous initialement ? _______
+📝 **Question 1 :** Combien de documents avez-vous initialement ?
 
 **Étape 3 : Observer la suppression automatique**
 
@@ -3412,9 +3391,9 @@ print("\nVous devriez voir 'expire_soon' disparaître.")
 db.ttl_demo.find().forEach(doc => print(doc._id))
 ```
 
-📝 **Question 2 :** Après ~90 secondes, quels documents restent ? _______
+📝 **Question 2 :** Après ~90 secondes, quels documents restent ?
 
-📝 **Question 3 :** Le document `no_expire` est-il supprimé ? Pourquoi ? _______
+📝 **Question 3 :** Le document `no_expire` est-il supprimé ? Pourquoi ?
 
 <details>
 <summary>💡 Réponses</summary>
